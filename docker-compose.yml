@@ -1,0 +1,47 @@
+version: "2"
+
+services:
+  consul:
+    container_name: consul
+    image: consul
+    expose:
+      - "8300"
+      - "8400"
+      - "8500"
+    restart: always
+    
+  registrator:
+    container_name: registrator
+    image: gliderlabs/registrator:master
+    volumes:
+      - "/var/run/docker.sock:/tmp/docker.sock"
+    command: -internal consul://consul:8500
+    restart: always
+    depends_on:
+      - consul
+
+  service_1:
+    build: ./service1
+    expose:
+      - "7000"
+    environment:
+      SERVICE_7000_NAME: "service1/v1"
+      SERVICE_7000_TAGS: "web"
+
+  service_2:
+    build: ./service2
+    expose:
+      - "6000"
+    environment:
+      SERVICE_6000_NAME: "service2/v1"
+      SERVICE_6000_TAGS: "web"
+
+  haproxy:
+    build: ./haproxy
+    container_name: haproxy
+    ports:
+      - 80:80
+      - 1936:1936 
+
+networks:
+  default:
