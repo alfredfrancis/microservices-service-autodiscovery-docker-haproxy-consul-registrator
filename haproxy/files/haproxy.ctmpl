@@ -18,11 +18,11 @@ defaults
 frontend http-in
     bind *:80{{range $i,$a:=services}}{{$path:=.Name}}{{range .Tags}}{{if eq . "web"}}
     acl app{{$i}} path_beg -i /{{$path}}{{end}}{{end}}{{end}}
-    {{range $i,$a:=services}}{{range .Tags}}{{if eq . "web"}}
-    use_backend srvs_app{{$i}} if app{{$i}}{{end}}{{end}}{{end}}
+    {{range $i,$a:=services}}{{$path:=.Name}}{{range .Tags}}{{if eq . "web"}}
+    use_backend  web_{{$path | replaceAll "/" "_" }} if app{{$i}}{{end}}{{end}}{{end}}
 
 {{range $i,$a:=services}}{{$path:=.Name}}{{range .Tags}}{{if eq . "web"}}
-backend srvs_app{{$i}}
+backend  web_{{$path | replaceAll "/" "_" }}
     mode http
     balance roundrobin
     option forwardfor
